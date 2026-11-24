@@ -60,6 +60,25 @@ def create_app(config_name="default"):
             "version": "1.0.0"
         }, 200
 
+    # Database connectivity health check endpoint
+    @app.route("/api/health/db", methods=["GET"])
+    def database_health_check():
+        try:
+            from sqlalchemy import text
+            db.session.execute(text("SELECT 1"))
+            return {
+                "success": True,
+                "database": "connected",
+                "message": "Supabase PostgreSQL connection successful"
+            }, 200
+        except Exception as exc:
+            app.logger.error("Database connectivity check failed: %s", exc)
+            return {
+                "success": False,
+                "database": "disconnected",
+                "message": "Database connection failed"
+            }, 503
+
     # Global HTTP error handlers
     @app.errorhandler(404)
     def not_found(error):

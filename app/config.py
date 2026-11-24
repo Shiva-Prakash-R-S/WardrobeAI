@@ -7,10 +7,14 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "wardrobe-ai-flask-secret-key-2026")
-    SQLALCHEMY_DATABASE_URI = os.getenv(
+    _raw_db_url = os.getenv(
         "DATABASE_URL",
         "postgresql://postgres:1234@localhost:5432/wardrobe_ai"
     )
+    # Normalize postgres:// to postgresql:// for SQLAlchemy compatibility (common with Render/Supabase)
+    if _raw_db_url and _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = _raw_db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
